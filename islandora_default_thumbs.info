@@ -1,0 +1,9 @@
+name = "Islandora Default Thumbnail"
+description = "Modify the default thumbnail per Content Model"
+package = Islandora Tools
+dependencies[] = islandora
+dependencies[] = islandora_basic_collection
+dependencies[] = islandora_solr
+core = 7.x
+version = 7.x-dev
+configure = admin/islandora/tools/islandora_default_thumb

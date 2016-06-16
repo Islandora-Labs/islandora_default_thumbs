@@ -1,0 +1,76 @@
+<?php
+
+/**
+ * @file
+ * Handles the default viewable thumbnail images.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_default_thumbs_menu() {
+  return array(
+    'admin/islandora/tools/islandora_default_thumb' => array(
+      'title' => 'Islandora Default Thumbnail Configuration',
+      'description' => 'Choose Default Thumbnails',
+      'page callback' => 'drupal_get_form',
+      'access arguments' => array('administer site configuration'),
+      'page arguments' => array('islandora_default_thumbs_admin'),
+      'file' => 'includes/admin.form.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
+  );
+}
+
+/**
+ * Implements hook_preprocess_islandora_basic_collection_grid().
+ */
+function islandora_default_thumbs_preprocess_islandora_basic_collection_grid(&$variables) {
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+  dsm($variables, "vars");
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables);
+}
+
+/**
+ * Implements hook_preprocess_islandora_basic_collection().
+ */
+function islandora_default_thumbs_preprocess_islandora_basic_collection(&$variables) {
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+  
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables);
+}
+
+/**
+ * Implements hook_preprocess_islandora_solr().
+ */
+function islandora_default_thumbs_preprocesssss_islandora_solr(&$variables) {
+	dsm(array(), "b");
+	dsm($variables, "over vars");
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+  $variables['associated_objects_array'] = array();
+  foreach($variables['results'] as $key => $value) {
+    $variables['associated_objects_array'][$value['PID']] = array(
+      'object' => islandora_object_load($value['PID']),
+      'title' => $value['object_label'],
+      'thumbnail' => "",
+    );
+  }
+
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
+  $count = 0;
+  foreach($variables['associated_objects_array'] as $key => &$value) {
+  	//dsm($value, "val");
+    $variables['results'][$count]['thumbnail'] = $value['thumbnail'];
+    
+  //  dsm($variables['results'][$count], "it is this?");
+    $count++;
+  }
+// 	$variables['associated_objects_array'] = array(
+//     if (is_null($value['object'])) {
+//       $value['object'] = islandora_object_load();
+//     }
+// 	);
+
+  
+	dsm($variables, "vars");
+}

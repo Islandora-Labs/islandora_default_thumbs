@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Install file, remove files and module variables.
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_default_thumbs_uninstall() {
+  module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $variables = array(
+    'islandora_default_thumbs_force_thumb_config',
+    'islandora_default_thumbs_missing_thumbnail',
+    'islandora_default_thumbs_file_fids',
+    'islandora_default_thumbs_force_thumb_config',
+  );
+  $replacement_file_fids = variable_get('islandora_default_thumbs_file_fids', array());
+  $default_missing_file = variable_get('islandora_default_thumbs_missing_thumbnail', 0);
+  if ($default_missing_file != 0 && $default_missing_file != NULL) {
+    $file = file_load($default_missing_file);
+    file_delete($file, TRUE);
+  }
+  foreach($replacement_file_fids as $fid) {
+    if ($fid != 0 && $fid != NULL) {
+      $file = file_load($fid);
+      file_delete($file, TRUE);
+    }
+  }
+  $content_models = islandora_get_content_models();
+  foreach ($content_models as $pid => $content_model) {
+    $default = str_replace(":", "__", $content_model['pid']);
+    $default .= "_thumb";
+    $fid = variable_get($default);
+    if ($fid != 0 && $fid != NULL) {
+      $file = file_load($fid);
+      file_delete($file, TRUE);
+    }
+    $enabled = $default . "_enabled";
+    $variables[] = $default;
+    $variables[] = $enabled;
+  }
+  array_walk($variables, 'variable_del');
+}
