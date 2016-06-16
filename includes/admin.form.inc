@@ -47,6 +47,30 @@ function islandora_default_thumbs_admin(array $form, array &$form_state) {
       'thumb_override' => $thumb_override,
     );
   }
+
+  $compare_images = variable_get('islandora_default_thumbs_file_fids', array());
+  $source_rows = array();
+  foreach ($compare_images as $source) {
+    if ($source != "") {
+      $file = file_load($source);
+      $image_url = file_create_url($file->uri);
+
+      $source_rows[$file->fid] = array(
+        'selected' => array(
+          '#type' => 'checkbox',
+          '#title' => 'Remove',
+          '#default_value' => 0,
+        ),
+        'title' => array(
+          '#markup' => t('@label', array('@label' => $file->filename)),
+        ),
+        'thumb_source' => array(
+          "#markup" => theme('image', array('path' => $image_url, 'alt' => $file->filename)),
+        ),
+      );
+    }
+  }
+
   $form['islandora_default_thumbs_compare_image_fieldset'] = array(
     '#type' => 'fieldset',
     '#title' => t('Compare image configuration'),
@@ -77,7 +101,7 @@ function islandora_default_thumbs_admin(array $form, array &$form_state) {
         'pid' => array('data' => t('Content Model'), 'class' => "content_model_pid"),
         'prompt' => array('data' => t('Thumbnail Replacement'), 'class' => "content_model_replacement"),
       ),
-      '#theme' => 'islandora_basic_collection_policy_management_table',
+      '#theme' => 'islandora_default_thumbs_management_table',
       'rows' => $rows,
     ),
     'islandora_default_thumbs_compare_image_fieldset' => array(
@@ -86,6 +110,16 @@ function islandora_default_thumbs_admin(array $form, array &$form_state) {
       '#description' => t("Add images here to use as the base of comparison to an Islandora objects thumbnail datastream. If an object is found to use any of the following images as its thumbnail, the content models configured image replacment above will be used in its place."),
       '#collapsible' => TRUE,
       '#collapsed' => FALSE,
+      'configured_compare_images' => array(
+        '#tree' => TRUE,
+        '#header' => array(
+          'selected' => array('class' => 'select-all'),
+          'title' => array('data' => t('File Name'), 'class' => "content_model_pid"),
+          'thumb_source' => array('data' => t('Thumbnail Source'), 'class' => "content_model_replacement"),
+        ),
+        '#theme' => 'islandora_default_thumbs_management_table',
+        'rows' => $source_rows,
+      ),
       'islandora_default_thumbs_plupload' => array(
         '#type' => 'plupload',
         '#weight' => 5,
@@ -119,29 +153,6 @@ function islandora_default_thumbs_admin(array $form, array &$form_state) {
     ),
   );
 
-  $compare_images = variable_get('islandora_default_thumbs_file_fids', array());
-  foreach ($compare_images as $source) {
-    if ($source != "") {
-      if (!isset($form['islandora_default_thumbs_compare_image_fieldset']['configured_compare_image'])) {
-        $form['islandora_default_thumbs_compare_image_fieldset']['configured_compare_image'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Currently configured defaults'),
-          '#collapsible' => TRUE,
-          '#collapsed' => FALSE,
-        );
-      }
-      $file = file_load($source);
-      $image_url = file_create_url($file->uri);
-      $form['islandora_default_thumbs_compare_image_fieldset']['configured_compare_image']["compare_image_$source"] = array(
-        '#type'     => 'checkbox',
-        '#required' => FALSE,
-        '#title' => t('Enable'),
-        '#upload_location' => file_default_scheme() . '://islandora_default_thumbs/replace_icons/',
-        '#default_value' => 1,
-        '#suffix' => theme('image', array('path' => $image_url, 'alt' => $file->filename)),
-      );
-    }
-  }
   return $form;
 }
 
@@ -178,13 +189,11 @@ function islandora_default_thumbs_admin_submit(array $form, array &$form_state) 
   $replacement_file_fids = variable_get('islandora_default_thumbs_file_fids', array());
   $remove_fid = array();
   // Remove selected images if they are not checked.
-  foreach ($replacement_file_fids as $file_id_key => $file_id) {
-    foreach ($form_state['values'] as $value_key => $in_value) {
-      if ($value_key == "compare_image_$file_id") {
-        // Delete this image.
-        if ($form_state['values']["compare_image_$file_id"] == 0) {
-          array_push($remove_fid, $file_id);
-        }
+  if (isset($form_state['values']['configured_compare_images'])) {
+    foreach ($form_state['values']['configured_compare_images']['rows'] as $file_id => $in_value) {
+      // Delete this image.
+      if ($in_value['selected'] == 1) {
+        array_push($remove_fid, $file_id);
       }
     }
   }
@@ -241,6 +250,7 @@ function islandora_default_thumbs_file_save_plupload_files($files) {
       $destination = file_unmanaged_move($source, $destination, FILE_EXISTS_RENAME);
 
       $file = plupload_file_uri_to_object($destination);
+      $file->status = FILE_STATUS_PERMANENT;
       file_save($file);
       $saved_files[] = file_load($file->fid);
       array_push($replacement_file_fids, $file->fid);
