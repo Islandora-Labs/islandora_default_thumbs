@@ -37,7 +37,7 @@ This module is intended to allow the replacement of a solution packs provided de
 
 ![Default Missing Thumbnail Image](images/missing_tn_dsid.png)
 
-* To 'Add Source Thumbnail images' to be used as a base of comparison. Should any of the configured source thumbnails be found to be used by any configured content model on this modules configuration page, the configured content model image will be used in its place.
+* Add source thumbnail images to be used as a base of comparison. Should any of the configured source thumbnails be found to be used by any configured content model on this modules configuration page, the configured content model image will be used in its place.
 
 ![Comparison Base](images/compare_image_config.png)
 
