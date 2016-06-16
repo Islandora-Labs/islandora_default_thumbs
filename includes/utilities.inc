@@ -5,6 +5,14 @@
  * Islandora Default Thumbs Utility functions.
  */
 
+/**
+ * Prepare page variables for use in page templates.
+ *
+ * @param array $variables
+ *   Page template preprocess provided variables array.
+ * @param bool $search_results_page
+ *   Indicates if this is for the search result template.
+ */
 function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables, $search_results_page = FALSE) {
   $defaults = islandora_default_thumbs_get_compare_defaults();
   $force = variable_get('islandora_default_thumbs_force_thumb_config', 0);

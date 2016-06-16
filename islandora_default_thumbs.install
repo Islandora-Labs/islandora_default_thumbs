@@ -23,7 +23,7 @@ function islandora_default_thumbs_uninstall() {
     $file = file_load($default_missing_file);
     file_delete($file, TRUE);
   }
-  foreach($replacement_file_fids as $fid) {
+  foreach ($replacement_file_fids as $fid) {
     if ($fid != 0 && $fid != NULL) {
       $file = file_load($fid);
       file_delete($file, TRUE);
