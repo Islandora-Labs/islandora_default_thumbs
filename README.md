@@ -19,21 +19,21 @@ Install as usual, see [this](https://drupal.org/documentation/install/modules-th
 
 ## Configuration
 
-This module is intended to allow the replacment of a solution packs provided default image, such as the folder.png provided by the [Islandora Solution Pack Collection](https://github.com/Islandora/islandora_solution_pack_collection/blob/7.x/images/folder.png). Instead of relying on each solution pack to provide its default thumbnail to this module, use the [Plupload](https://www.drupal.org/project/plupload) module integration to supply your own.
+This module is intended to allow the replacement of a solution packs provided default image, such as the folder.png provided by the [Islandora Solution Pack Collection](https://github.com/Islandora/islandora_solution_pack_collection/blob/7.x/images/folder.png). Instead of relying on each solution pack to provide its default thumbnail to this module, use the [Plupload](https://www.drupal.org/project/plupload) module integration to supply your own.
 
 * After enabling this module, navigate to its configuration page ({YOUR_SITE}/admin/islandora/tools/islandora_default_thumb). Configure the default TN Datastream DSID for use with this module. Defaults to 'TN'.
 
 ![Default TN](images/default_tn_datastream.png)
 
-* Select and upload an image to use as a thumbnial for objects of the specified content model. If the checkbox to the left of the content models name is not selected, it will not be used.
+* Select and upload an image to use as a thumbnail for objects of the specified content model. If the checkbox to the left of the content models name is not selected, it will not be used.
 
 ![CModel Config](images/cmodel_image_config.png)
 
-* Choose 'Force replacement of all configured thumbnails' to force the display to use the configured thumbnail for every object with the corrisponding configured CModel, regardless of the thumbnails source.
+* Choose 'Force replacement of all configured thumbnails to force the display to use the configured thumbnail for every object with the corrisponding configured CModel, regardless of the thumbnails source.
 
 ![Force Replacement](images/force_replacement.png)
 
-* Configure the default missing thumbnail datastream replacment image. NOTE: This will be ignored if a default thumbnail is specified already for said objects CModel.
+* Configure the default missing thumbnail datastream replacement image. NOTE: This will be ignored if a default thumbnail is specified already for said objects CModel.
 
 ![Default Missing Thumbnail Image](images/missing_tn_dsid.png)
 
