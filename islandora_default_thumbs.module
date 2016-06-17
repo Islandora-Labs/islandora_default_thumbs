@@ -51,9 +51,63 @@ function islandora_default_thumbs_preprocess_islandora_basic_collection(&$variab
 }
 
 /**
- * Implements hook_preprocess_islandora_solr().
+ * Implements hook_preprocess_islandora_objects_grid().
+ *
+ * Required to add support to non SPARQL (Legacy) displays.
  */
-function islandora_default_thumbs_preprocesssss_islandora_solr(&$variables) {
+function islandora_default_thumbs_preprocess_islandora_objects_grid(&$variables) {
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+  $variables['associated_objects_array'] = array();
+  foreach ($variables['objects'] as $key => $value) {
+    $variables['associated_objects_array'][$value['pid']] = array(
+      'object' => islandora_object_load($value['pid']),
+      'title' => $value['label'],
+      'thumbnail' => "",
+    );
+  }
+
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
+  $count = 0;
+  foreach ($variables['associated_objects_array'] as $key => &$value) {
+    if (!empty($value['thumbnail'])) {
+      $variables['objects'][$count]['thumb'] = $value['thumbnail'];
+    }
+    $count++;
+  }
+}
+
+/**
+ * Implements hook_preprocess_islandora_objects_list().
+ *
+ * Required to add support to non SPARQL (Legacy) displays.
+ */
+function islandora_default_thumbs_preprocess_islandora_objects_list(&$variables) {
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+  $variables['associated_objects_array'] = array();
+  foreach ($variables['objects'] as $key => $value) {
+    $variables['associated_objects_array'][$value['pid']] = array(
+      'object' => islandora_object_load($value['pid']),
+      'title' => $value['label'],
+      'thumbnail' => "",
+    );
+  }
+
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
+  $count = 0;
+  foreach ($variables['associated_objects_array'] as $key => &$value) {
+    if (!empty($value['thumbnail'])) {
+      $variables['objects'][$count]['thumb'] = $value['thumbnail'];
+    }
+    $count++;
+  }
+}
+
+/**
+ * Implements hook_preprocess_islandora_solr().
+ *
+ * This hook will supply default thumb info to search results.
+ */
+function islandora_default_thumbs_preprocess_islandora_solr(&$variables) {
   module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
   $variables['associated_objects_array'] = array();
   foreach ($variables['results'] as $key => $value) {
@@ -67,7 +121,9 @@ function islandora_default_thumbs_preprocesssss_islandora_solr(&$variables) {
   islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
   $count = 0;
   foreach ($variables['associated_objects_array'] as $key => &$value) {
-    $variables['results'][$count]['thumbnail'] = $value['thumbnail'];
+    if (!empty($value['thumbnail'])) {
+      $variables['objects'][$count]['thumbnail'] = $value['thumbnail'];
+    }
     $count++;
   }
 }

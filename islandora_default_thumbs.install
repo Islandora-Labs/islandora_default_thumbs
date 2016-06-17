@@ -11,36 +11,45 @@
 function islandora_default_thumbs_uninstall() {
   module_load_include('inc', 'islandora_basic_collection', 'includes/utilities');
   module_load_include('inc', 'islandora', 'includes/utilities');
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+
+  // Define our master variables array.
   $variables = array(
-    'islandora_default_thumbs_force_thumb_config',
+    'islandora_default_thumbs_replacements',
     'islandora_default_thumbs_missing_thumbnail',
-    'islandora_default_thumbs_file_fids',
+    'islandora_default_thumbs_default_tn_datastream',
     'islandora_default_thumbs_force_thumb_config',
+    'islandora_default_thumbs_file_fids',
   );
-  $replacement_file_fids = variable_get('islandora_default_thumbs_file_fids', array());
-  $default_missing_file = variable_get('islandora_default_thumbs_missing_thumbnail', 0);
-  if ($default_missing_file != 0 && $default_missing_file != NULL) {
-    $file = file_load($default_missing_file);
+
+  // Retrieve current configuration.
+  $current_config = islandora_default_thumbs_configuration();
+
+  // Delete the default thumb.
+  if ($current_config['missing_obj_thumb'] != 0 && $current_config['missing_obj_thumb'] != NULL) {
+    $file = file_load($current_config['missing_obj_thumb']);
     file_delete($file, TRUE);
   }
-  foreach ($replacement_file_fids as $fid) {
+
+  // Delete compare thumbs.
+  foreach ($current_config['compare_thumbs'] as $fid => $hash) {
     if ($fid != 0 && $fid != NULL) {
       $file = file_load($fid);
       file_delete($file, TRUE);
     }
   }
+
+  // Delete thumb replacements.
   $content_models = islandora_get_content_models();
   foreach ($content_models as $pid => $content_model) {
     $default = str_replace(":", "__", $content_model['pid']);
-    $default .= "_thumb";
-    $fid = variable_get($default);
+    $fid = $current_config['thumb_replacements'][$content_model['pid']]['thumb_override'][$default];
     if ($fid != 0 && $fid != NULL) {
       $file = file_load($fid);
       file_delete($file, TRUE);
     }
-    $enabled = $default . "_enabled";
-    $variables[] = $default;
-    $variables[] = $enabled;
   }
+
+  // Finally, clean up remaining variables.
   array_walk($variables, 'variable_del');
 }

@@ -14,13 +14,13 @@
  *   Indicates if this is for the search result template.
  */
 function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables, $search_results_page = FALSE) {
-  $defaults = islandora_default_thumbs_get_compare_defaults();
-  $force = variable_get('islandora_default_thumbs_force_thumb_config', 0);
+  $defaults = islandora_default_thumbs_configuration();
   foreach ($variables['associated_objects_array'] as $key => &$value) {
-    $cmodel_thumb_config = islandora_default_thumbs_get_config_for_object($value['object'], $force, $defaults);
+    $cmodel_thumb_config = islandora_default_thumbs_get_config_for_object($value['object'], $defaults);
+    dsm($cmodel_thumb_config, "cmodel config");
     if ($cmodel_thumb_config) {
       $object_url = 'islandora/object/' . $key;
-      $thumb_image = theme('image', array('path' => $cmodel_thumb_config['thumb']['value'], 'alt' => $value['title']));
+      $thumb_image = theme('image', array('path' => $cmodel_thumb_config['thumb'], 'alt' => $value['title']));
       if ($search_results_page) {
         $value['thumbnail'] = l($thumb_image, $object_url, array('html' => TRUE, 'attributes' => array('title' => $value['title'])));
       }
@@ -37,20 +37,17 @@ function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables, $
  * @return array()
  *   An array of default configurations, such as the
  *   default missing object thumbnail, and base64 encoded
- *   default images, and the default TN DSID.
+ *   default images the default TN DSID, and all
+ *   comparison thumbsnails as a key/value pair (fid => md5).
  */
-function islandora_default_thumbs_get_compare_defaults() {
-  $replacement_file_fids = variable_get('islandora_default_thumbs_file_fids', array());
-  $return = array();
-  $return['missing_obj_thumb'] = variable_get('islandora_default_thumbs_missing_thumbnail');
-  $return['default_tn_dsid'] = variable_get('islandora_default_thumbs_default_tn_datastream', TN);
-  foreach ($replacement_file_fids as $file_id_key => $file_id) {
-    $file = file_load($file_id);
-    $default_thumb_url = file_create_url($file->uri);
-    $file_contents = file_get_contents($default_thumb_url);
-    $return[] = base64_encode($file_contents);
-  }
-  return $return;
+function islandora_default_thumbs_configuration() {
+  return array(
+    'thumb_replacements' => variable_get('islandora_default_thumbs_replacements', array()),
+    'missing_obj_thumb' => variable_get('islandora_default_thumbs_missing_thumbnail', NULL),
+    'default_tn_dsid' => variable_get('islandora_default_thumbs_default_tn_datastream', 'TN'),
+    'force' => variable_get('islandora_default_thumbs_force_thumb_config', 0),
+    'compare_thumbs' => variable_get('islandora_default_thumbs_file_fids', array()),
+  );
 }
 
 /**
@@ -59,98 +56,59 @@ function islandora_default_thumbs_get_compare_defaults() {
  * @param AbstractObject $object
  *   An islandora object.
  *
- * @param bool $force
- *   Force thumbnail configuration.
  * @param array $defaults
  *   default config, as retrieved from
- *   islandora_default_thumbs_get_compare_defaults().
+ *   islandora_default_thumbs_configuration().
  *
  * @return array|bool
  *   A configuration array, or FALSE if none exists.
  */
-function islandora_default_thumbs_get_config_for_object($object, $force, $defaults) {
+function islandora_default_thumbs_get_config_for_object($object, $defaults) {
   foreach ($object->models as $model_key => $model) {
+  	dsm($model_key, "model key");
     $default = str_replace(":", "__", $model);
-    $enabled_thumb = $default . "_thumb";
-    $enabled = $enabled_thumb . "_enabled";
-    if (variable_get($enabled)) {
-      $fid = variable_get($enabled_thumb);
-
-      if (isset($object[$defaults['default_tn_dsid']]->{'content'}) && !is_null($object[$defaults['default_tn_dsid']]->{'content'}) || $force) {
-        if ($force) {
-          if (isset($fid)) {
+    if (isset($defaults['thumb_replacements'][$model])) {
+      $model_override = $defaults['thumb_replacements'][$model]['thumb_override'];
+      if ($model_override[$default] != 0) {
+        if (isset($object[$defaults['default_tn_dsid']]->{'content'}) &&
+          !is_null($object[$defaults['default_tn_dsid']]->{'content'}) || $defaults['force']) {
+          if ($defaults['force']) {
             return array(
-              "key" => $default,
-              "enabled" => array(
-                "value" => $enabled_thumb,
-                "selector" => $enabled,
-              ),
-              "thumb" => array(
-                "value" => file_create_url(file_load($fid)->uri),
-                "selector" => $enabled_thumb,
-              ),
+              "thumb" => file_create_url(file_load($model_override[$default])->uri),
             );
           }
-        }
-        else {
-          $tn_content = base64_encode($object[$defaults['default_tn_dsid']]->{'content'});
-          foreach ($defaults as $key => $value) {
-            if ($tn_content === $value) {
-              if (isset($fid)) {
-                return array(
-                  "key" => $default,
-                  "enabled" => array(
-                    "value" => $enabled_thumb,
-                    "selector" => $enabled,
-                  ),
-                  "thumb" => array(
-                    "value" => file_create_url(file_load($fid)->uri),
-                    "selector" => $enabled_thumb,
-                  ),
-                );
-              }
+          else {
+            if (in_array(md5($object[$defaults['default_tn_dsid']]->{'content'}), $defaults['compare_thumbs']) &&
+              $defaults['thumb_replacements'][$model]['selected'] == 1) {
+              return array(
+                "thumb" => file_create_url(file_load($model_override[$default])->uri),
+              );
             }
           }
         }
+        else {
+          // Handle the use case if a thumbnail does not exist
+          // on an object. Use the CModel configured option first
+          // if posible, otherwise, use the configured missing TN
+          // option.
+          if (isset($defaults['missing_obj_thumb'])) {
+            return array(
+              "thumb" => file_create_url(file_load($defaults["missing_obj_thumb"])->uri),
+            );
+          }
+        }
+        return FALSE;
       }
-      else {
+      if (!isset($object[$defaults['default_tn_dsid']])) {
         // Handle the use case if a thumbnail does not exist
         // on an object. Use the CModel configured option first
         // if posible, otherwise, use the configured missing TN
         // option.
         if (isset($defaults['missing_obj_thumb'])) {
           return array(
-            "key" => "missing_obj_thumb",
-            "enabled" => array(
-              "value" => "missing_obj_thumb",
-              "selector" => "missing_obj_thumb",
-            ),
-            "thumb" => array(
-              "value" => file_create_url(file_load($defaults["missing_obj_thumb"])->uri),
-              "selector" => $enabled_thumb,
-            ),
+            "thumb" => file_create_url(file_load($defaults["missing_obj_thumb"])->uri),
           );
         }
-      }
-      return FALSE;
-    }
-    if (!isset($object[$defaults['default_tn_dsid']])) {
-      // Handle the use case if a thumbnail does not exist
-      // on an object. Use the CModel configured option first
-      // if posible, otherwise, use the configured missing TN
-      // option.
-      if (isset($defaults['missing_obj_thumb'])) {
-        return array(
-          "key" => "missing_obj_thumb",
-          "enabled" => array(
-            "value" => "missing_obj_thumb",
-            "selector" => "missing_obj_thumb",
-          ),
-          "thumb" => array(
-            "value" => file_create_url(file_load($defaults["missing_obj_thumb"])->uri),
-            "selector" => $enabled_thumb,
-          ),
-        );
       }
     }
   }
