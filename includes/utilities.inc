@@ -26,6 +26,7 @@ function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables, $
       else {
         $value['thumb_link'] = l($thumb_image, $object_url, array('html' => TRUE, 'attributes' => array('title' => $value['title'])));
       }
+      $value['full_config'] = $cmodel_thumb_config;
     }
   }
 }

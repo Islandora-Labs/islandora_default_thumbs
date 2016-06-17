@@ -50,6 +50,7 @@ OR
 * The CModel default image is configured, selected and 'Force replacement of all configured thumbnails' is selected.
 
 This functionality is supported for use with SPARQL (Legacy), SPARQL and SOLR display generation, as configured on your sites Collection Solution Pack configuration page (ex: http://{YOUR_SITE}/admin/islandora/solution_pack_config/basic_collection)
+Also works with the compound object display naviation block, NOT the JAIL display.
 
 ## Troubleshooting/Issues
 

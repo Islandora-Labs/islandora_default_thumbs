@@ -122,7 +122,33 @@ function islandora_default_thumbs_preprocess_islandora_solr(&$variables) {
   $count = 0;
   foreach ($variables['associated_objects_array'] as $key => &$value) {
     if (!empty($value['thumbnail'])) {
-      $variables['objects'][$count]['thumbnail'] = $value['thumbnail'];
+      $variables['results'][$count]['thumbnail'] = $value['thumbnail'];
+    }
+    $count++;
+  }
+}
+
+/**
+ * Implements hook_preprocess_islandora_compound_prev_next().
+ *
+ * Adds support for compound object display default thumbnails.
+ */
+function islandora_default_thumbs_preprocess_islandora_compound_prev_next(&$variables) {
+  module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
+  $variables['associated_objects_array'] = array();
+  foreach ($variables['themed_siblings'] as $key => $value) {
+    $variables['associated_objects_array'][$value['pid']] = array(
+      'object' => islandora_object_load($value['pid']),
+      'title' => $value['label'],
+      'thumbnail' => "",
+    );
+  }
+
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
+  $count = 0;
+  foreach ($variables['associated_objects_array'] as $key => &$value) {
+    if (!empty($value['full_config']['thumb'])) {
+      $variables['themed_siblings'][$count]['TN'] = $value['full_config']['thumb'];
     }
     $count++;
   }
