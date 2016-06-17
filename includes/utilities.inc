@@ -17,7 +17,6 @@ function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables, $
   $defaults = islandora_default_thumbs_configuration();
   foreach ($variables['associated_objects_array'] as $key => &$value) {
     $cmodel_thumb_config = islandora_default_thumbs_get_config_for_object($value['object'], $defaults);
-    dsm($cmodel_thumb_config, "cmodel config");
     if ($cmodel_thumb_config) {
       $object_url = 'islandora/object/' . $key;
       $thumb_image = theme('image', array('path' => $cmodel_thumb_config['thumb'], 'alt' => $value['title']));
@@ -65,7 +64,6 @@ function islandora_default_thumbs_configuration() {
  */
 function islandora_default_thumbs_get_config_for_object($object, $defaults) {
   foreach ($object->models as $model_key => $model) {
-  	dsm($model_key, "model key");
     $default = str_replace(":", "__", $model);
     if (isset($defaults['thumb_replacements'][$model])) {
       $model_override = $defaults['thumb_replacements'][$model]['thumb_override'];
