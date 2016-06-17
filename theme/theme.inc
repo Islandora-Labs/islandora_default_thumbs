@@ -6,7 +6,7 @@
  */
 
 /**
- * Theme the collection policy management table.
+ * Theme the default thumbs management tables.
  *
  * @param array $variables
  *   Variables passed to this theme function.
