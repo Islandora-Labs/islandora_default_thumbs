@@ -57,23 +57,7 @@ function islandora_default_thumbs_preprocess_islandora_basic_collection(&$variab
  */
 function islandora_default_thumbs_preprocess_islandora_objects_grid(&$variables) {
   module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
-  $variables['associated_objects_array'] = array();
-  foreach ($variables['objects'] as $key => $value) {
-    $variables['associated_objects_array'][$value['pid']] = array(
-      'object' => islandora_object_load($value['pid']),
-      'title' => $value['label'],
-      'thumbnail' => "",
-    );
-  }
-
-  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
-  $count = 0;
-  foreach ($variables['associated_objects_array'] as $key => &$value) {
-    if (!empty($value['thumbnail'])) {
-      $variables['objects'][$count]['thumb'] = $value['thumbnail'];
-    }
-    $count++;
-  }
+  islandora_default_thumbs_prepare_vars_for_solr_page_template($variables, 'objects', 'standard');
 }
 
 /**
@@ -83,23 +67,7 @@ function islandora_default_thumbs_preprocess_islandora_objects_grid(&$variables)
  */
 function islandora_default_thumbs_preprocess_islandora_objects_list(&$variables) {
   module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
-  $variables['associated_objects_array'] = array();
-  foreach ($variables['objects'] as $key => $value) {
-    $variables['associated_objects_array'][$value['pid']] = array(
-      'object' => islandora_object_load($value['pid']),
-      'title' => $value['label'],
-      'thumbnail' => "",
-    );
-  }
-
-  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
-  $count = 0;
-  foreach ($variables['associated_objects_array'] as $key => &$value) {
-    if (!empty($value['thumbnail'])) {
-      $variables['objects'][$count]['thumb'] = $value['thumbnail'];
-    }
-    $count++;
-  }
+  islandora_default_thumbs_prepare_vars_for_solr_page_template($variables, 'objects', 'standard');
 }
 
 /**
@@ -109,23 +77,7 @@ function islandora_default_thumbs_preprocess_islandora_objects_list(&$variables)
  */
 function islandora_default_thumbs_preprocess_islandora_solr(&$variables) {
   module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
-  $variables['associated_objects_array'] = array();
-  foreach ($variables['results'] as $key => $value) {
-    $variables['associated_objects_array'][$value['PID']] = array(
-      'object' => islandora_object_load($value['PID']),
-      'title' => $value['object_label'],
-      'thumbnail' => "",
-    );
-  }
-
-  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
-  $count = 0;
-  foreach ($variables['associated_objects_array'] as $key => &$value) {
-    if (!empty($value['thumbnail'])) {
-      $variables['results'][$count]['thumbnail'] = $value['thumbnail'];
-    }
-    $count++;
-  }
+  islandora_default_thumbs_prepare_vars_for_solr_page_template($variables, 'results', 'search');
 }
 
 /**
@@ -135,21 +87,5 @@ function islandora_default_thumbs_preprocess_islandora_solr(&$variables) {
  */
 function islandora_default_thumbs_preprocess_islandora_compound_prev_next(&$variables) {
   module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
-  $variables['associated_objects_array'] = array();
-  foreach ($variables['themed_siblings'] as $key => $value) {
-    $variables['associated_objects_array'][$value['pid']] = array(
-      'object' => islandora_object_load($value['pid']),
-      'title' => $value['label'],
-      'thumbnail' => "",
-    );
-  }
-
-  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
-  $count = 0;
-  foreach ($variables['associated_objects_array'] as $key => &$value) {
-    if (!empty($value['full_config']['thumb'])) {
-      $variables['themed_siblings'][$count]['TN'] = $value['full_config']['thumb'];
-    }
-    $count++;
-  }
+  islandora_default_thumbs_prepare_vars_for_solr_page_template($variables, 'themed_siblings', 'compound');
 }
