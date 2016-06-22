@@ -195,6 +195,7 @@ function islandora_default_thumbs_admin_submit(array $form, array &$form_state) 
         $file = plupload_file_uri_to_object($destination);
         $file->status = FILE_STATUS_PERMANENT;
         file_save($file);
+
         // Save the File id as array key, and the files md5 hash for
         // later comparison.
         $default_thumbs[$file->fid] = md5(file_get_contents(file_create_url($file->uri)));
@@ -227,20 +228,27 @@ function islandora_default_thumbs_admin_submit(array $form, array &$form_state) 
   // Save the default missing thumbnail file.
   if ($form_state['values']['islandora_default_thumbs_missing_thumbnail'] != 0) {
     islandora_default_thumbs_file_save(array($form['islandora_default_thumbs_missing_thumbnail']['#file']->fid));
+    // Save Default missing thumbnail file id.
+    variable_set(
+      'islandora_default_thumbs_missing_thumbnail',
+      $form_state['values']['islandora_default_thumbs_missing_thumbnail']
+    );
   }
   else {
+    // Check for an existing entry since the default thumb appears to have been
+    // removed. If so, delete it.
     $missing_fid = variable_get('islandora_default_thumbs_missing_thumbnail');
     if ($missing_fid) {
       $file = file_load($missing_fid);
       file_delete($file, TRUE);
+
+      // Reset our missing thumbnail config back to NULL.
+      variable_set(
+        'islandora_default_thumbs_missing_thumbnail',
+        NULL
+      );
     }
   }
-
-  // Save Default missing thumbnail file id.
-  variable_set(
-    'islandora_default_thumbs_missing_thumbnail',
-    $form_state['values']['islandora_default_thumbs_missing_thumbnail']
-  );
 }
 
 /**

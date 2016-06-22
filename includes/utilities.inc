@@ -9,25 +9,70 @@
  * Prepare page variables for use in page templates.
  *
  * @param array $variables
- *   Page template preprocess provided variables array.
- * @param bool $search_results_page
- *   Indicates if this is for the search result template.
+ *   Template preprocess provided variables array.
  */
-function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables, $search_results_page = FALSE) {
+function islandora_default_thumbs_prepare_vars_for_page_templates(&$variables) {
   $defaults = islandora_default_thumbs_configuration();
   foreach ($variables['associated_objects_array'] as $key => &$value) {
     $cmodel_thumb_config = islandora_default_thumbs_get_config_for_object($value['object'], $defaults);
     if ($cmodel_thumb_config) {
       $object_url = 'islandora/object/' . $key;
       $thumb_image = theme('image', array('path' => $cmodel_thumb_config['thumb'], 'alt' => $value['title']));
-      if ($search_results_page) {
-        $value['thumbnail'] = l($thumb_image, $object_url, array('html' => TRUE, 'attributes' => array('title' => $value['title'])));
-      }
-      else {
-        $value['thumb_link'] = l($thumb_image, $object_url, array('html' => TRUE, 'attributes' => array('title' => $value['title'])));
-      }
+
+      $value['thumb_link'] = $value['thumbnail'] = l($thumb_image, $object_url, array('html' => TRUE, 'attributes' => array('title' => $value['title'])));
       $value['full_config'] = $cmodel_thumb_config;
     }
+  }
+}
+
+/**
+ * Prepare variables for the solr templates.
+ *
+ * @param array $variables
+ *   Template preprocess provided variables array.
+ * @param string $result_set
+ *   Key in the $variables array indicating result set.
+ * @param string $view_type
+ *   Either:
+ *     standard => list or grid item views,
+ *     search   => Search results page,
+ *     compound => Compound object view.
+ */
+function islandora_default_thumbs_prepare_vars_for_solr_page_template(&$variables, $result_set, $view_type) {
+  $variables['associated_objects_array'] = array();
+  foreach ($variables[$result_set] as $key => &$value) {
+    $pid = isset($value['pid']) ? $value['pid'] : $value['PID'];
+    $label = isset($value['label']) ? $value['label'] : $value['object_label'];
+    $variables['associated_objects_array'][$pid] = array(
+      'object' => islandora_object_load($pid),
+      'title' => $label,
+      'thumbnail' => "",
+    );
+  }
+  islandora_default_thumbs_prepare_vars_for_page_templates($variables, TRUE);
+  $count = 0;
+  foreach ($variables['associated_objects_array'] as $key => &$value) {
+    switch ($view_type) {
+      case 'standard':
+        if (!empty($value['thumbnail'])) {
+          $variables['objects'][$count]['thumb'] = $value['thumbnail'];
+        }
+        break;
+
+      case 'search':
+        if (!empty($value['thumbnail'])) {
+          $variables['results'][$count]['thumbnail'] = $value['thumbnail'];
+        }
+        break;
+
+      case 'compound':
+        if (!empty($value['full_config']['thumb'])) {
+          $variables['themed_siblings'][$count]['TN'] = $value['full_config']['thumb'];
+        }
+        break;
+
+    }
+    $count++;
   }
 }
 
