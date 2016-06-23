@@ -183,9 +183,11 @@ function islandora_default_thumbs_admin_submit(array $form, array &$form_state) 
 
   // Save pluploaded images.
   if (count($form_state['values']['islandora_default_thumbs_plupload']) > 0) {
-    $scheme = file_default_scheme() . '://collection_images/default_icons/';
+    $scheme = file_default_scheme() . '://islandora_default_thumbs/collection_images/default_icons/';
     $default_thumbs = variable_get('islandora_default_thumbs_file_fids', array());
 
+    // Create the folder if it does not exist.
+    file_prepare_directory($scheme, FILE_CREATE_DIRECTORY);
     foreach ($form_state['values']['islandora_default_thumbs_plupload'] as $uploaded_file) {
       if ($uploaded_file['status'] == 'done') {
         $source = $uploaded_file['tmppath'];
