@@ -113,15 +113,22 @@ function islandora_default_thumbs_get_config_for_object($object, $defaults) {
     $default = str_replace(":", "__", $model);
     if (isset($defaults['thumb_replacements'][$model])) {
       $model_override = $defaults['thumb_replacements'][$model]['thumb_override'];
+
+      // If this model is set to be overridden.
       if ($model_override[$default] != 0) {
+
+        // If the object has a thumbnail DS set, exists or force.
         if (isset($object[$defaults['default_tn_dsid']]->{'content'}) &&
           !is_null($object[$defaults['default_tn_dsid']]->{'content'}) || $defaults['force']) {
+
+          // Force option.
           if ($defaults['force']) {
             return array(
               "thumb" => file_create_url(file_load($model_override[$default])->uri),
             );
           }
           else {
+            // Final comparision of thumbnail content replacement.
             if (in_array(md5($object[$defaults['default_tn_dsid']]->{'content'}), $defaults['compare_thumbs']) &&
               $defaults['thumb_replacements'][$model]['selected'] == 1) {
               return array(
@@ -135,7 +142,12 @@ function islandora_default_thumbs_get_config_for_object($object, $defaults) {
           // on an object. Use the CModel configured option first
           // if posible, otherwise, use the configured missing TN
           // option.
-          if (isset($defaults['missing_obj_thumb'])) {
+          if (!isset($object[$defaults['default_tn_dsid']]->{'content'}) || $defaults['thumb_replacements'][$model]['md5']) {
+            return array(
+              "thumb" => file_create_url(file_load($model_override[$default])->uri),
+            );
+          }
+          elseif (isset($defaults['missing_obj_thumb'])) {
             return array(
               "thumb" => file_create_url(file_load($defaults["missing_obj_thumb"])->uri),
             );
