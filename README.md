@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This module allows an administrative user to configure the default thumbnails found through the site. This functionality is non destructive to an existing objects thumbnail datastream, and will only affect the display layer thumbnails. This includes the Grid view, List view and SOLR Search results (SOLR Search results requires [This pull](https://github.com/Islandora/islandora_solr_search/pull/284) to function).
+This module allows an administrative user to configure the default thumbnails found through the site. This functionality is non destructive to an existing objects thumbnail datastream, and will only affect the display layer thumbnails. This includes the Grid view, List view, SOLR Search results and the compound object display naviation block (not JAIL display). Supported for use with SPARQL (Legacy), SPARQL and SOLR display generation.
 
 ## Requirements
 
