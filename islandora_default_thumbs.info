@@ -4,6 +4,7 @@ package = Islandora Tools
 dependencies[] = islandora
 dependencies[] = islandora_basic_collection
 dependencies[] = islandora_solr
+dependencies[] = plupload
 core = 7.x
 version = 7.x-dev
 configure = admin/islandora/tools/islandora_default_thumb
