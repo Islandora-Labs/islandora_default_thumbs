@@ -98,8 +98,8 @@ function islandora_default_thumbs_configuration() {
 /**
  * Get current configuration for an object based on CModels.
  *
- * @param AbstractObject $object
- *   An islandora object.
+ * @param $object
+ *   An islandora object, or some false value.
  *
  * @param array $defaults
  *   default config, as retrieved from
@@ -109,6 +109,9 @@ function islandora_default_thumbs_configuration() {
  *   A configuration array, or FALSE if none exists.
  */
 function islandora_default_thumbs_get_config_for_object($object, $defaults) {
+  if (!$object) {
+    return FALSE;
+  }
   foreach ($object->models as $model_key => $model) {
     $default = str_replace(":", "__", $model);
     if (isset($defaults['thumb_replacements'][$model])) {
