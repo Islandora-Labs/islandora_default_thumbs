@@ -63,6 +63,7 @@ Having problems or solved a problem? Check out the Islandora google groups for a
 Current maintainers:
 
 * [Morgan Dawe](https://github.com/MorganDawe)
+* [discoverygarden](https://github.com/discoverygarden)
 
 ## Development
 
