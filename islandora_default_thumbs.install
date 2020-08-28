@@ -13,7 +13,7 @@ function islandora_default_thumbs_uninstall() {
   module_load_include('inc', 'islandora', 'includes/utilities');
   module_load_include('inc', 'islandora_default_thumbs', 'includes/utilities');
 
-  // Define our master variables array.
+  // Define our main variables array.
   $variables = array(
     'islandora_default_thumbs_replacements',
     'islandora_default_thumbs_missing_thumbnail',
